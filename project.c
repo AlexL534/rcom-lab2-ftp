@@ -13,12 +13,14 @@
 
 #define MAX_LENGTH 256
 #define MAX_PATH_LENGTH 1024
+#define IP_MAX_LENGTH 32
 
 typedef struct {
     char user[MAX_LENGTH];
     char password[MAX_LENGTH];
     char host[MAX_LENGTH];
     char path[MAX_PATH_LENGTH];
+    char ip[IP_MAX_LENGTH];
 } URL;
 
 int parse_url(char* url, URL *parsed_url) {
@@ -39,7 +41,42 @@ int parse_url(char* url, URL *parsed_url) {
         sscanf(url, "ftp://%255[^:]:%255[^@]@%255[^/]/%1023s", parsed_url->user, parsed_url->password, parsed_url->host, parsed_url->path);
     }
 
+    // Resolve hostname to IP
+    struct hostent *he = gethostbyname(parsed_url->host);
+    if (he == NULL) {
+        printf("Could not resolve hostname %s\n", parsed_url->host);
+        return -1;
+    }
+    struct in_addr **addr_list = (struct in_addr **)he->h_addr_list;
+    strcpy(parsed_url->ip, inet_ntoa(*addr_list[0]));  // Store the first IP address
+
     return 0;
+}
+
+int openSocket(char* ip, int port) {
+
+    int sockfd;
+    struct sockaddr_in server_addr;
+
+    /*server address handling*/
+    bzero((char *) &server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(ip);    /*32 bit Internet address network byte ordered*/
+    server_addr.sin_port = htons(port);        /*server TCP port must be network byte ordered */
+
+    /*open a TCP socket*/
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("socket()");
+        exit(-1);
+    }
+
+    /*connect to the server*/
+    if (connect(sockfd,(struct sockaddr *) &server_addr,sizeof(server_addr)) < 0) {
+        perror("connect()");
+        exit(-1);
+    }
+
+    return sockfd;
 }
 
 int main(int argc, char *argv[]) {
@@ -56,9 +93,14 @@ int main(int argc, char *argv[]) {
         printf("Password: %s\n", parsed_url.password);
         printf("Host: %s\n", parsed_url.host);
         printf("Path: %s\n", parsed_url.path);
+        printf("IP: %s\n", parsed_url.ip);
     } else {
         printf("Failed to parse URL\n");
     }
 
+    int socket = openSocket(parsed_url.ip, SERVER_PORT);
+    printf("Connected to server at %s\n", parsed_url.ip);
+
+    close(sockfd);
     return 0;
 }
