@@ -1,0 +1,75 @@
+Exp 1
+
+E1 Y3 no switch 3
+E1 Y4 no switch 4
+
+no tux 3
+ifconfig eth1 up
+ifconfig eth1 172.16.40.1/24
+
+no tux 4
+ifconfig eth1 up
+ifconfig eth1 172.16.40.254/24
+
+EXP 2
+
+E1 Y2 no switch 2
+
+/system reset-configuration no gtk
+
+no tux 2
+ifconfig eth1 up
+ifconfig eth1 172.16.41.1./24
+
+/interface bridge add name=bridge40
+/interface bridge add name=bridge41
+
+/interface bridge port remove [find interface=ether2]
+/interface bridge port remove [find interface=ether3]
+/interface bridge port remove [find interface=ether4]
+
+/interface bridge port add bridge=bridge40 interface=ether2
+/interface bridge port add bridge=bridge40 interface=ether3
+/interface bridge port add bridge=bridge41 interface=ether4
+
+no tux 3
+ping 172.16.40.254
+deve funcionar
+
+ping 172.16.41.1
+n deve funcionar
+
+EXP 3
+E2 Y4 no switch 7
+
+no tux 4
+ifconfig eth2 up
+ifconfig eth2 172.16.41.253/24
+
+/interface bridge port remove [find interface=ether7]
+/interface bridge port add bridge=bridge41 interface=ether7
+
+sysctl net.ipv4.ip_forward=1
+sysctl net.ipv4.icmp_echo_ignore_broadcasts=0
+
+no tux 2
+route add -net  172.16.40.0/24 gw 172.16.41.253
+
+no tux 3
+route add -net  172.16.41.0/24 gw 172.16.40.254 
+
+no tux 3
+ping 172.16.40.254
+ping 172.16.41.253
+ping 172.16.41.1
+devem funcionar todos
+
+EXP 4
+E1 do router no PY.12
+E2 do router no switch 6
+
+/interface bridge port remove [find interface=ether6]
+/interface bridge port add bridge=bridge41 interface=ether6
+
+trocar da consola para o router mt
+
