@@ -1,0 +1,150 @@
+21     ether2         bridge120     yes    1 0x         10         10       none
+22     ether5         bridge120     yes    1 0x         10         10       none
+23     ether3         bridge121     yes    1 0x         10         10       none
+24     ether13        bridge121     yes    1 0x         10         10       none
+
+------
+
+root@gnu33:~# route add -net 172.16.121.0/24 gw 172.16.120.254
+root@gnu33:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.120.0    0.0.0.0         255.255.255.0   U     0      0        0 eth1
+172.16.121.0    172.16.120.254  255.255.255.0   UG    0      0        0 eth1
+root@gnu33:~# 
+
+
+----
+
+root@gnu33:~# ping 172.16.120.254
+PING 172.16.120.254 (172.16.120.254) 56(84) bytes of data.
+64 bytes from 172.16.120.254: icmp_seq=1 ttl=64 time=0.182 ms
+64 bytes from 172.16.120.254: icmp_seq=2 ttl=64 time=0.146 ms
+64 bytes from 172.16.120.254: icmp_seq=3 ttl=64 time=0.150 ms
+64 bytes from 172.16.120.254: icmp_seq=4 ttl=64 time=0.168 ms
+64 bytes from 172.16.120.254: icmp_seq=5 ttl=64 time=0.145 ms
+64 bytes from 172.16.120.254: icmp_seq=6 ttl=64 time=0.143 ms
+64 bytes from 172.16.120.254: icmp_seq=7 ttl=64 time=0.144 ms
+^C
+--- 172.16.120.254 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 130ms
+rtt min/avg/max/mdev = 0.143/0.154/0.182/0.013 ms
+root@gnu33:~# ping 172.16.120.253
+PING 172.16.120.253 (172.16.120.253) 56(84) bytes of data.
+^C
+--- 172.16.120.253 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 30ms
+
+root@gnu33:~# ping 172.16.121.253
+PING 172.16.121.253 (172.16.121.253) 56(84) bytes of data.
+64 bytes from 172.16.121.253: icmp_seq=1 ttl=64 time=0.178 ms
+64 bytes from 172.16.121.253: icmp_seq=2 ttl=64 time=0.140 ms
+64 bytes from 172.16.121.253: icmp_seq=3 ttl=64 time=0.144 ms
+64 bytes from 172.16.121.253: icmp_seq=4 ttl=64 time=0.167 ms
+64 bytes from 172.16.121.253: icmp_seq=5 ttl=64 time=0.143 ms
+64 bytes from 172.16.121.253: icmp_seq=6 ttl=64 time=0.140 ms
+^C
+--- 172.16.121.253 ping statistics ---
+6 packets transmitted, 6 received, 0% packet loss, time 106ms
+rtt min/avg/max/mdev = 0.140/0.152/0.178/0.014 ms
+root@gnu33:~# ping 172.16.121.1
+PING 172.16.121.1 (172.16.121.1) 56(84) bytes of data.
+64 bytes from 172.16.121.1: icmp_seq=1 ttl=63 time=0.415 ms
+64 bytes from 172.16.121.1: icmp_seq=2 ttl=63 time=0.226 ms
+64 bytes from 172.16.121.1: icmp_seq=3 ttl=63 time=0.260 ms
+64 bytes from 172.16.121.1: icmp_seq=4 ttl=63 time=0.254 ms
+64 bytes from 172.16.121.1: icmp_seq=5 ttl=63 time=0.235 ms
+64 bytes from 172.16.121.1: icmp_seq=6 ttl=63 time=0.216 ms
+^C
+--- 172.16.121.1 ping statistics ---
+6 packets transmitted, 6 received, 0% packet loss, time 106ms
+rtt min/avg/max/mdev = 0.216/0.267/0.415/0.070 ms
+root@gnu33:~# 
+
+
+
+-----
+
+
+root@gnu33:~# arp -d 172.16.120.254
+root@gnu33:~# ping 172.16.121.1
+PING 172.16.121.1 (172.16.121.1) 56(84) bytes of data.
+64 bytes from 172.16.121.1: icmp_seq=1 ttl=63 time=0.562 ms
+64 bytes from 172.16.121.1: icmp_seq=2 ttl=63 time=0.255 ms
+64 bytes from 172.16.121.1: icmp_seq=3 ttl=63 time=0.247 ms
+64 bytes from 172.16.121.1: icmp_seq=4 ttl=63 time=0.237 ms
+64 bytes from 172.16.121.1: icmp_seq=5 ttl=63 time=0.250 ms
+64 bytes from 172.16.121.1: icmp_seq=6 ttl=63 time=0.225 ms
+64 bytes from 172.16.121.1: icmp_seq=7 ttl=63 time=0.277 ms
+64 bytes from 172.16.121.1: icmp_seq=8 ttl=63 time=0.241 ms
+64 bytes from 172.16.121.1: icmp_seq=9 ttl=63 time=0.244 ms
+^C
+--- 172.16.121.1 ping statistics ---
+9 packets transmitted, 9 received, 0% packet loss, time 181ms
+rtt min/avg/max/mdev = 0.225/0.282/0.562/0.099 ms
+root@gnu33:~# 
+
+
+
+------
+
+
+[admin@MikroTik] > /interface bridge port remove [find interface=ether20]        
+[admin@MikroTik] > /interface bridge port add bridge=bridge121 interface=ether20
+[admin@MikroTik] > /interface bridge port print                                 
+Flags: X - disabled, I - inactive, D - dynamic, H - hw-offload 
+ #     INTERFACE      BRIDGE        HW  PVID PR  PATH-COST INTERNA...    HORIZON
+ 0 I H ;;; defconf
+       ether4         bridge        yes    1 0x         10         10       none
+ 1 I H ;;; defconf
+       ether6         bridge        yes    1 0x         10         10       none
+ 2 I H ;;; defconf
+       ether7         bridge        yes    1 0x         10         10       none
+ 3 I H ;;; defconf
+       ether8         bridge        yes    1 0x         10         10       none
+ 4 I H ;;; defconf
+       ether9         bridge        yes    1 0x         10         10       none
+ 5 I H ;;; defconf
+       ether10        bridge        yes    1 0x         10         10       none
+ 6 I H ;;; defconf
+       ether11        bridge        yes    1 0x         10         10       none
+ 7 I H ;;; defconf
+       ether12        bridge        yes    1 0x         10         10       none
+ 8 I H ;;; defconf
+       ether14        bridge        yes    1 0x         10         10       none
+ 9 I H ;;; defconf
+       ether15        bridge        yes    1 0x         10         10       none
+10 I H ;;; defconf
+       ether16        bridge        yes    1 0x         10         10       none
+11 I H ;;; defconf
+       ether17        bridge        yes    1 0x         10         10       none
+12 I H ;;; defconf
+       ether18        bridge        yes    1 0x         10         10       none
+13 I H ;;; defconf
+       ether19        bridge        yes    1 0x         10         10       none
+14 I H ;;; defconf
+       ether21        bridge        yes    1 0x         10         10       none
+15 I H ;;; defconf
+       ether22        bridge        yes    1 0x         10         10       none
+16 I H ;;; defconf
+       ether23        bridge        yes    1 0x         10         10       none
+17 I H ;;; defconf
+       ether24        bridge        yes    1 0x         10         10       none
+18 I H ;;; defconf
+       sfp-sfpplus1   bridge        yes    1 0x         10         10       none
+19 I H ;;; defconf
+       sfp-sfpplus2   bridge        yes    1 0x         10         10       none
+20     ether2         bridge120     yes    1 0x         10         10       none
+21     ether5         bridge120     yes    1 0x         10         10       none
+22     ether3         bridge121     yes    1 0x         10         10       none
+23     ether13        bridge121     yes    1 0x         10         10       none
+24     ether20        bridge121     yes    1 0x         10         10       none
+
+
+
+------
+
+
+

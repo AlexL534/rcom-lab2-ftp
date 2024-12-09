@@ -1,0 +1,80 @@
+root@gnu34:~# ifconfig eth2 up
+root@gnu34:~# ifconfig eth2 172.16.121.253/24
+root@gnu34:~# 
+root@gnu34:~# 
+root@gnu34:~# 
+root@gnu34:~# 
+root@gnu34:~# 
+root@gnu34:~# 
+root@gnu34:~# sysctl net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+root@gnu34:~# 
+root@gnu34:~# sysctl net.ipv4.icmp_echo_ignore_broadcasts=0
+net.ipv4.icmp_echo_ignore_broadcasts = 0
+
+
+------
+
+root@gnu34:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.227.20.124  netmask 255.255.255.0  broadcast 10.227.20.255
+        inet6 fe80::221:5aff:fe5a:743e  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:5a:74:3e  txqueuelen 1000  (Ethernet)
+        RX packets 41077  bytes 2699189 (2.5 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 66  bytes 6629 (6.4 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.120.254  netmask 255.255.255.0  broadcast 172.16.120.255
+        inet6 fe80::2e0:7dff:feb4:b894  prefixlen 64  scopeid 0x20<link>
+        ether 00:e0:7d:b4:b8:94  txqueuelen 1000  (Ethernet)
+        RX packets 207  bytes 27415 (26.7 KiB)
+        RX errors 0  dropped 75  overruns 0  frame 0
+        TX packets 71  bytes 7920 (7.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.121.253  netmask 255.255.255.0  broadcast 172.16.121.255
+        inet6 fe80::208:54ff:fe57:fa89  prefixlen 64  scopeid 0x20<link>
+        ether 00:08:54:57:fa:89  txqueuelen 1000  (Ethernet)
+        RX packets 57  bytes 7443 (7.2 KiB)
+        RX errors 0  dropped 27  overruns 0  frame 0
+        TX packets 22  bytes 2586 (2.5 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 10  bytes 842 (842.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 10  bytes 842 (842.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+
+-----
+
+
+root@gnu34:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.120.0    0.0.0.0         255.255.255.0   U     0      0        0 eth1
+172.16.121.0    0.0.0.0         255.255.255.0   U     0      0        0 eth2
+root@gnu34:~# 
+
+-----
+
+
+
+root@gnu34:~# arp -d 172.16.120.1
+root@gnu34:~# arp -d 172.16.121.1
+
+
+
+
+

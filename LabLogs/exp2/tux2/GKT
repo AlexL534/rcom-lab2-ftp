@@ -1,0 +1,89 @@
+[admin@MikroTik] > /interface bridge add name=bridge40
+[admin@MikroTik] > /interface bridge add name=bridge41
+
+[admin@MikroTik] > /interface bridge print            
+Flags: X - disabled, R - running 
+ 0 R ;;; defconf
+     name="bridge" mtu=auto actual-mtu=1500 l2mtu=1592 arp=enabled 
+     arp-timeout=auto mac-address=C4:AD:34:1C:8B:BB protocol-mode=rstp 
+     fast-forward=yes igmp-snooping=no auto-mac=no admin-mac=C4:AD:34:1C:8B:BB 
+     ageing-time=5m priority=0x8000 max-message-age=20s forward-delay=15s 
+     transmit-hold-count=6 vlan-filtering=no dhcp-snooping=no 
+
+ 1 R name="bridge40" mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled 
+     arp-timeout=auto mac-address=9A:6E:1C:7C:34:97 protocol-mode=rstp 
+     fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m 
+     priority=0x8000 max-message-age=20s forward-delay=15s 
+     transmit-hold-count=6 vlan-filtering=no dhcp-snooping=no 
+
+ 2 R name="bridge41" mtu=auto actual-mtu=1500 l2mtu=65535 arp=enabled 
+     arp-timeout=auto mac-address=E6:AD:43:AD:75:03 protocol-mode=rstp 
+     fast-forward=yes igmp-snooping=no auto-mac=yes ageing-time=5m 
+     priority=0x8000 max-message-age=20s forward-delay=15s 
+     transmit-hold-count=6 vlan-filtering=no dhcp-snooping=no 
+
+
+[admin@MikroTik] > /interface bridge port remove [find interface =ether1]    
+[admin@MikroTik] > /interface bridge port remove [find interface =ether2] 
+[admin@MikroTik] > /interface bridge port remove [find interface =ether3] 
+
+/bdridge add port brudge40 eth1 eth2
+/bdridge add port brudge40 eth3
+
+[admin@MikroTik] > /interface bridge port print                               
+Flags: X - disabled, I - inactive, D - dynamic, H - hw-offload 
+ #     INTERFACE      BRIDGE        HW  PVID PR  PATH-COST INTERNA...    HORIZON
+ 0 I H ;;; defconf
+       ether4         bridge        yes    1 0x         10         10       none
+ 1 I H ;;; defconf
+       ether5         bridge        yes    1 0x         10         10       none
+ 2 I H ;;; defconf
+       ether6         bridge        yes    1 0x         10         10       none
+ 3 I H ;;; defconf
+       ether7         bridge        yes    1 0x         10         10       none
+ 4 I H ;;; defconf
+       ether8         bridge        yes    1 0x         10         10       none
+ 5 I H ;;; defconf
+       ether9         bridge        yes    1 0x         10         10       none
+ 6 I H ;;; defconf
+       ether10        bridge        yes    1 0x         10         10       none
+ 7 I H ;;; defconf
+       ether11        bridge        yes    1 0x         10         10       none
+ 8 I H ;;; defconf
+       ether12        bridge        yes    1 0x         10         10       none
+ 9 I H ;;; defconf
+       ether13        bridge        yes    1 0x         10         10       none
+10 I H ;;; defconf
+       ether14        bridge        yes    1 0x         10         10       none
+11 I H ;;; defconf
+       ether15        bridge        yes    1 0x         10         10       none
+12 I H ;;; defconf
+       ether16        bridge        yes    1 0x         10         10       none
+13 I H ;;; defconf
+       ether17        bridge        yes    1 0x         10         10       none
+14 I H ;;; defconf
+       ether18        bridge        yes    1 0x         10         10       none
+15 I H ;;; defconf
+       ether19        bridge        yes    1 0x         10         10       none
+16 I H ;;; defconf
+       ether20        bridge        yes    1 0x         10         10       none
+17 I H ;;; defconf
+       ether21        bridge        yes    1 0x         10         10       none
+18 I H ;;; defconf
+       ether22        bridge        yes    1 0x         10         10       none
+19 I H ;;; defconf
+       ether23        bridge        yes    1 0x         10         10       none
+20 I H ;;; defconf
+       ether24        bridge        yes    1 0x         10         10       none
+21 I H ;;; defconf
+       sfp-sfpplus1   bridge        yes    1 0x         10         10       none
+22 I H ;;; defconf
+       sfp-sfpplus2   bridge        yes    1 0x         10         10       none
+23     ether1         bridge40      yes    1 0x         10         10       none
+24     ether2         bridge40      yes    1 0x         10         10       none
+25     ether3         bridge41      yes    1 0x         10         10       none
+
+
+
+
+
