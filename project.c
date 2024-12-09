@@ -123,7 +123,7 @@ void passive_mode(int sockfd, char *data_ip, int *data_port) {
 
     send_ftp_command(sockfd, "PASV\r\n");
 
-    int n = recv(sockfd, buffer, MAX_LENGTH - 1, 0);
+    int n = recv(sockfd, response, MAX_LENGTH - 1, 0);
     if (n < 0) {
         perror("recv()");
         exit(-1);
