@@ -49,6 +49,7 @@ ifconfig eth2 172.16.41.253/24
 /interface bridge port remove [find interface=ether7]
 /interface bridge port add bridge=bridge41 interface=ether7
 
+no tux 4
 sysctl net.ipv4.ip_forward=1
 sysctl net.ipv4.icmp_echo_ignore_broadcasts=0
 
