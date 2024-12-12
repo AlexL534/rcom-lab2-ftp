@@ -13,6 +13,16 @@
 #define MAX_PATH_LENGTH 1024
 #define IP_MAX_LENGTH 32
 
+//server responses
+#define SERVICE_READY_USER 220
+#define USER_OK_NEED_PASS 331
+#define USER_LOGGED_IN 230
+#define ENTER_PASSIVE_MODE 227
+#define FILE_OK_OPEN_DATA 150
+#define CLOSING_DATA_CONNECTION 226
+#define CLOSING_CONTROL_CONNECTION 221
+#define DATA_CONNECTION_ALREADY_OPEN 125
+
 typedef struct {
     char user[MAX_LENGTH];
     char password[MAX_LENGTH];
@@ -77,66 +87,58 @@ int openSocket(char* ip, int port) {
     return sockfd;
 }
 
-// Function to send and receive FTP commands
-void send_ftp_command(int sockfd, const char *command) {
-    char buffer[MAX_LENGTH];
-    send(sockfd, command, strlen(command), 0);
-    printf("Sent: %s\n", command);
-
-    // Receive response from server
-    int n = recv(sockfd, buffer, MAX_LENGTH-1, 0);
-    if (n < 0) {
-        perror("recv()");
-        exit(-1);
-    }
-    buffer[n] = '\0';
-    printf("Received: %s\n", buffer);
-}
-
-void receive_server_greeting(int sockfd) {
-    char buffer[MAX_LENGTH];
-    int n = recv(sockfd, buffer, MAX_LENGTH - 1, 0);
-    if (n < 0) {
-        perror("recv()");
-        exit(-1);
-    }
-    buffer[n] = '\0';
-    printf("Server: %s\n", buffer);
-}
-
-void send_user_command(int sockfd, const char *user) {
-    char command[MAX_LENGTH];
-    snprintf(command, sizeof(command), "USER %s\r\n", user);
-    send_ftp_command(sockfd, command);
-}
-
-void send_pass_command(int sockfd, const char *password) {
-    char command[MAX_LENGTH];
-    snprintf(command, sizeof(command), "PASS %s\r\n", password);
-    send_ftp_command(sockfd, command);
-}
-
-void passive_mode(int sockfd, char *data_ip, int *data_port) {
-    char response[MAX_LENGTH];
-    char ip[IP_MAX_LENGTH];
-    int h1, h2, h3, h4, p1, p2;
-
-    send_ftp_command(sockfd, "PASV\r\n");
-
-    int n = recv(sockfd, response, MAX_LENGTH - 1, 0);
+int receive_server_response(int sockfd, char *response) {
+    int n = recv(sockfd, response, MAX_LENGTH - 1, 0), responseCode;
     if (n < 0) {
         perror("recv()");
         exit(-1);
     }
     response[n] = '\0';
-    printf("PASV Response: %s\n", response);
+    sscanf(response, "%d", &responseCode);
+    printf("Server: %s\n", response);
+    return responseCode;
+}
 
-    if (sscanf(response, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", 
-               &h1, &h2, &h3, &h4, &p1, &p2) != 6) {
-        printf("Error: Could not parse PASV response\n");
+// Function to send and receive FTP commands
+int send_ftp_command(int sockfd, const char *command, char *response) {
+    char buffer[MAX_LENGTH];
+    send(sockfd, command, strlen(command), 0);
+    printf("Sent: %s\n", command);
+
+    // Receive response from server
+    int a = 0;
+    while (a <= 0) {
+        a = receive_server_response(sockfd, response);
+    }
+    printf("%d\n", a);
+    return a;
+}
+
+int send_user_command(int sockfd, const char *user) {
+    char response[MAX_LENGTH];
+    char command[MAX_LENGTH];
+    snprintf(command, sizeof(command), "USER %s\r\n", user);
+    return send_ftp_command(sockfd, command, response);
+}
+
+int send_pass_command(int sockfd, const char *password) {
+    char response[MAX_LENGTH];
+    char command[MAX_LENGTH];
+    snprintf(command, sizeof(command), "PASS %s\r\n", password);
+    return send_ftp_command(sockfd, command, response);
+}
+
+void passive_mode(int sockfd, char *data_ip, int *data_port) {
+    char response[MAX_LENGTH];
+    int h1, h2, h3, h4, p1, p2;
+
+    if (send_ftp_command(sockfd, "PASV\r\n", response) != ENTER_PASSIVE_MODE) {
+        printf("Failed to enter Passive mode. Aborting\n");
         exit(-1);
     }
 
+    sscanf(response, "%*[^(](%d,%d,%d,%d,%d,%d)%*[^\n$)]", &h1, &h2, &h3, &h4, &p1, &p2);
+    printf("p1 = %d p2 = %d", p1, p2);
     // Construct the IP address
     snprintf(data_ip, IP_MAX_LENGTH, "%d.%d.%d.%d", h1, h2, h3, h4);
 
@@ -146,14 +148,19 @@ void passive_mode(int sockfd, char *data_ip, int *data_port) {
     printf("Data Connection Info - IP: %s, Port: %d\n", data_ip, *data_port);
 }
 
-void retrieve_file(int control_sock, int data_sock, const char *file_path) {
+int retrieve_file(int control_sock, int data_sock, const char *file_path) {
     char command[MAX_LENGTH];
     char buffer[MAX_LENGTH];
+    char response[MAX_LENGTH];
     FILE *file;
 
     // Send RETR command
     snprintf(command, sizeof(command), "RETR %s\r\n", file_path);
-    send_ftp_command(control_sock, command);
+    int code = send_ftp_command(control_sock, command, response);
+    if (code != FILE_OK_OPEN_DATA && code != DATA_CONNECTION_ALREADY_OPEN) {
+        printf("Could not find resource %s\n", file_path);
+        exit(-1);
+    }
 
     // Open file for writing
     file = fopen("downloaded_file", "wb");
@@ -165,19 +172,34 @@ void retrieve_file(int control_sock, int data_sock, const char *file_path) {
     // Receive data from data socket
     int bytes_received;
     while ((bytes_received = recv(data_sock, buffer, sizeof(buffer), 0)) > 0) {
-        fwrite(buffer, 1, bytes_received, file);
+        if (fwrite(buffer, 1, bytes_received, file) < 0) {
+            printf("Error downloading file\n");
+            exit(-1);
+        }
     }
 
     if (bytes_received < 0) {
         perror("recv()");
+        exit(-1);
     }
 
     fclose(file);
-    printf("File downloaded successfully.\n");
+    return receive_server_response(control_sock, response);
 }
 
 int open_data_socket(const char *data_ip, int data_port) {
     return openSocket((char *)data_ip, data_port);
+}
+
+int closeSockets(int control_socket, int data_socket) {
+    char response[MAX_LENGTH];
+    char command[MAX_LENGTH];
+    snprintf(command, sizeof(command), "QUIT\r\n");
+    if(send_ftp_command(control_socket, command, response) != CLOSING_CONTROL_CONNECTION) return -1;
+    
+    if (close(control_socket) < 0 || close(data_socket) < 0) return -1;
+    
+    return 1;
 }
 
 
@@ -189,6 +211,7 @@ int main(int argc, char *argv[]) {
 
     URL parsed_url;
     int result = parse_url(argv[1], &parsed_url);
+    char response[MAX_LENGTH];
 
     if (result != 0) {
         printf("Failed to parse URL\n");
@@ -203,14 +226,28 @@ int main(int argc, char *argv[]) {
 
     // Open control socket
     int control_sock = openSocket(parsed_url.ip, SERVER_PORT);
+    if (control_sock < 0 || receive_server_response(control_sock, response) != SERVICE_READY_USER) {
+        printf("Failed to connect to %s\n", parsed_url.ip);
+        exit(-1);
+    }
     printf("Connected to server at %s\n", parsed_url.ip);
 
-    // Receive server greeting
-    receive_server_greeting(control_sock);
+    printf("Server ready to receive new User\n");
 
     // Send USER and PASS commands
-    send_user_command(control_sock, parsed_url.user);
-    send_pass_command(control_sock, parsed_url.password);
+    if (send_user_command(control_sock, parsed_url.user) != USER_OK_NEED_PASS) {
+        printf("User %s is not known. Aborting\n", parsed_url.user);
+        exit(-1);
+    }
+
+    printf("User %s is known. Asking for Password\n", parsed_url.user);
+
+    if (send_pass_command(control_sock, parsed_url.password) != USER_LOGGED_IN) {
+        printf("Could not log the User %s with password:%s in. Aborting\n", parsed_url.user, parsed_url.password);
+        exit(-1);
+    }
+
+    printf("Logged the User %s with password:%s in. Proceeding\n", parsed_url.user, parsed_url.password);
 
     // Enter passive mode
     char data_ip[IP_MAX_LENGTH];
@@ -219,13 +256,26 @@ int main(int argc, char *argv[]) {
 
     // Open data socket
     int data_sock = open_data_socket(data_ip, data_port);
+    if (data_sock < 0) {
+        printf("Failed to open data socket\n");
+        exit(-1);
+    }
 
     // Retrieve file
-    retrieve_file(control_sock, data_sock, parsed_url.path);
+    if (retrieve_file(control_sock, data_sock, parsed_url.path) != CLOSING_DATA_CONNECTION) {
+        printf("Error downloading file %s.\n", parsed_url.path);
+    }
+
+    printf("File %s was downloaded successfully.\n", parsed_url.path);
 
     // Close sockets
-    close(data_sock);
-    close(control_sock);
+    if (closeSockets(control_sock, data_sock) < 0) {
+        printf("Error closing sockets\n");
+        exit(-1);
+    }
 
+    printf("Connection closed successfully.\n");
+
+    printf("Ending program\n");
     return 0;
 }
