@@ -99,40 +99,55 @@ int receive_server_response(int sockfd, char *response) {
         sscanf(response, "%d", &responseCode);
     }
     printf("Server: %s\n", response);
+    printf("Received: Code %d\n", responseCode);
     return responseCode;
 }
 
 // Function to send and receive FTP commands
-int send_ftp_command(int sockfd, const char *command, char *response) {
+void send_ftp_command(int sockfd, const char *command) {
     char buffer[MAX_LENGTH];
     send(sockfd, command, strlen(command), 0);
     printf("Sent: %s\n", command);
-
-    // Receive response from server
-    int a = receive_server_response(sockfd, response);
-    printf("Received: Code %d\n", a);
-    return a;
 }
 
 int send_user_command(int sockfd, const char *user) {
     char response[MAX_LENGTH];
     char command[MAX_LENGTH];
     snprintf(command, sizeof(command), "USER %s\r\n", user);
-    return send_ftp_command(sockfd, command, response);
+    send_ftp_command(sockfd, command);
+    int code = 0;
+    do {
+       code = receive_server_response(sockfd, response);
+    } while (code == SERVICE_READY_USER);
+    
+    return code;
 }
 
 int send_pass_command(int sockfd, const char *password) {
     char response[MAX_LENGTH];
     char command[MAX_LENGTH];
     snprintf(command, sizeof(command), "PASS %s\r\n", password);
-    return send_ftp_command(sockfd, command, response);
+    send_ftp_command(sockfd, command);
+    int code = 0;
+    do {
+       code = receive_server_response(sockfd, response);
+    } while (code == USER_OK_NEED_PASS);
+    
+    return code;
 }
 
 void passive_mode(int sockfd, char *data_ip, int *data_port) {
     char response[MAX_LENGTH];
     int h1, h2, h3, h4, p1, p2;
 
-    if (send_ftp_command(sockfd, "PASV\r\n", response) != ENTER_PASSIVE_MODE) {
+    send_ftp_command(sockfd, "PASV\r\n");
+
+    int code = 0;
+    do {
+       code = receive_server_response(sockfd, response);
+    } while (code == USER_LOGGED_IN);
+
+    if (code != ENTER_PASSIVE_MODE) {
         printf("Failed to enter Passive mode. Aborting\n");
         exit(-1);
     }
@@ -156,7 +171,12 @@ int retrieve_file(int control_sock, int data_sock, const char *file_path) {
 
     // Send RETR command
     snprintf(command, sizeof(command), "RETR %s\r\n", file_path);
-    int code = send_ftp_command(control_sock, command, response);
+    send_ftp_command(control_sock, command);
+    int code = 0;
+    do {
+       code = receive_server_response(control_sock, response);
+    } while (code == ENTER_PASSIVE_MODE);
+    
     if (code != FILE_OK_OPEN_DATA && code != DATA_CONNECTION_ALREADY_OPEN) {
         printf("Could not find resource %s\n", file_path);
         exit(-1);
@@ -184,7 +204,10 @@ int retrieve_file(int control_sock, int data_sock, const char *file_path) {
     }
 
     fclose(file);
-    return receive_server_response(control_sock, response);
+    do {
+       code = receive_server_response(control_sock, response);
+    } while (code == FILE_OK_OPEN_DATA || code == DATA_CONNECTION_ALREADY_OPEN);
+    return code;
 }
 
 int open_data_socket(const char *data_ip, int data_port) {
@@ -195,7 +218,13 @@ int closeSockets(int control_socket, int data_socket) {
     char response[MAX_LENGTH];
     char command[MAX_LENGTH];
     snprintf(command, sizeof(command), "QUIT\r\n");
-    if(send_ftp_command(control_socket, command, response) != CLOSING_CONTROL_CONNECTION) return -1;
+    send_ftp_command(control_socket, command);
+    int code = 0;
+    do {
+       code = receive_server_response(control_socket, response);
+    } while (code == CLOSING_DATA_CONNECTION);
+
+    if(code != CLOSING_CONTROL_CONNECTION) return -1;
     
     if (close(control_socket) < 0 || close(data_socket) < 0) return -1;
     
@@ -247,7 +276,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    printf("Logged the User %s with password:%s in. Proceeding\n", parsed_url.user, parsed_url.password);
+    printf("Logged the User %s with password:%s in.\nProceeding to enter Passive Mode\n", parsed_url.user, parsed_url.password);
 
     // Enter passive mode
     char data_ip[IP_MAX_LENGTH];
