@@ -43,8 +43,8 @@ int parse_url(char* url, URL *parsed_url) {
     regcomp(&regex, "@", 0);
     if (regexec(&regex, url, 0, NULL, 0) != 0) { // Format: ftp://<host>/<path>
         sscanf(url, "ftp://%255[^/]/%1023s", parsed_url->host, parsed_url->path);
-        strcpy(parsed_url->user, "rcom");
-        strcpy(parsed_url->password, "rcom");
+        strcpy(parsed_url->user, "anonymous");
+        strcpy(parsed_url->password, "password");
     } else { // Format: ftp://<user>:<password>@<host>/<path>
         sscanf(url, "ftp://%255[^:]:%255[^@]@%255[^/]/%1023s", parsed_url->user, parsed_url->password, parsed_url->host, parsed_url->path);
     }
@@ -88,13 +88,16 @@ int openSocket(char* ip, int port) {
 }
 
 int receive_server_response(int sockfd, char *response) {
-    int n = recv(sockfd, response, MAX_LENGTH - 1, 0), responseCode;
-    if (n < 0) {
-        perror("recv()");
-        exit(-1);
+    int responseCode = 0, n;
+    while (responseCode <= 0) {
+        n = recv(sockfd, response, MAX_LENGTH - 1, 0);
+        if (n < 0) {
+            perror("recv()");
+            exit(-1);
+        }
+        response[n] = '\0';
+        sscanf(response, "%d", &responseCode);
     }
-    response[n] = '\0';
-    sscanf(response, "%d", &responseCode);
     printf("Server: %s\n", response);
     return responseCode;
 }
@@ -106,11 +109,8 @@ int send_ftp_command(int sockfd, const char *command, char *response) {
     printf("Sent: %s\n", command);
 
     // Receive response from server
-    int a = 0;
-    while (a <= 0) {
-        a = receive_server_response(sockfd, response);
-    }
-    printf("%d\n", a);
+    int a = receive_server_response(sockfd, response);
+    printf("Received: Code %d\n", a);
     return a;
 }
 
@@ -138,7 +138,7 @@ void passive_mode(int sockfd, char *data_ip, int *data_port) {
     }
 
     sscanf(response, "%*[^(](%d,%d,%d,%d,%d,%d)%*[^\n$)]", &h1, &h2, &h3, &h4, &p1, &p2);
-    printf("p1 = %d p2 = %d", p1, p2);
+    printf("p1 = %d p2 = %d\n", p1, p2);
     // Construct the IP address
     snprintf(data_ip, IP_MAX_LENGTH, "%d.%d.%d.%d", h1, h2, h3, h4);
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     if (result != 0) {
         printf("Failed to parse URL\n");
-        return -1;
+        exit(-1);
     }
 
     printf("User: %s\n", parsed_url.user);
