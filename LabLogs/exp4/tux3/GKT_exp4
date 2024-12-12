@@ -1,0 +1,9 @@
+[admin@MikroTik] > /interface bridge port remove [find interface=ether6]        
+[admin@MikroTik] > /interface bridge port add bridge=bridge21 interface=ether6 
+[admin@MikroTik] > /ip address add address=172.16.1.29/24 interface=ether1
+[admin@MikroTik] > /ip address add address=172.16.21.254/24 interface=ether2
+[admin@MikroTik] > /ip route add dst-address=172.16.20.0/24 gateway=172.16.21.253
+[admin@MikroTik] > /ip route add dst-address=0.0.0.0/0 gateway=172.16.1.254
+[admin@MikroTik] > /ip firewall nat disable 0
+[admin@MikroTik] > /ip firewall nat enable 0
+

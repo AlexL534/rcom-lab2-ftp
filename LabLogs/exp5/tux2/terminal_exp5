@@ -1,0 +1,23 @@
+root@gnu22:~# ping google.com
+PING google.com (142.250.184.14) 56(84) bytes of data.
+From 172.16.1.29 (172.16.1.29) icmp_seq=1 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=2 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=3 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=4 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=5 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=6 Destination Host Unreachable
+64 bytes from mad41s10-in-f14.1e100.net (142.250.184.14): icmp_seq=7 ttl=112 time=19.8 ms
+64 bytes from mad41s10-in-f14.1e100.net (142.250.184.14): icmp_seq=9 ttl=112 time=18.5 ms
+From 172.16.1.29 (172.16.1.29) icmp_seq=8 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=10 Destination Host Unreachable
+64 bytes from mad41s10-in-f14.1e100.net (142.250.184.14): icmp_seq=12 ttl=112 time=19.5 ms
+From 172.16.1.29 (172.16.1.29) icmp_seq=11 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=13 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=14 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=15 Destination Host Unreachable
+From 172.16.1.29 (172.16.1.29) icmp_seq=16 Destination Host Unreachable
+^C
+--- google.com ping statistics ---
+19 packets transmitted, 3 received, +13 errors, 84.2105% packet loss, time 187ms
+rtt min/avg/max/mdev = 18.454/19.227/19.765/0.560 ms, pipe 3
+
