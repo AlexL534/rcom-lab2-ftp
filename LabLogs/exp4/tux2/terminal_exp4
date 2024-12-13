@@ -1,0 +1,46 @@
+root@gnu22:~# route add default gw 172.16.21.254
+root@gnu22:~# sysctl net.ipv4.conf.eth1.accept_redirects=0
+net.ipv4.conf.eth1.accept_redirects = 0
+root@gnu22:~# sysctl net.ipv4.conf.all.accept_redirects=0
+net.ipv4.conf.all.accept_redirects = 0
+root@gnu22:~# route del -net 172.16.20.0 gw 172.16.21.253 netmask 255.255.255.0
+
+
+root@gnu22:~# ping 172.16.20.1
+PING 172.16.20.1 (172.16.20.1) 56(84) bytes of data.
+64 bytes from 172.16.20.1: icmp_seq=1 ttl=63 time=0.360 ms
+From 172.16.21.254: icmp_seq=2 Redirect Host(New nexthop: 172.16.21.253)
+64 bytes from 172.16.20.1: icmp_seq=2 ttl=63 time=0.333 ms
+From 172.16.21.254: icmp_seq=3 Redirect Host(New nexthop: 172.16.21.253)
+64 bytes from 172.16.20.1: icmp_seq=3 ttl=63 time=0.325 ms
+From 172.16.21.254: icmp_seq=4 Redirect Host(New nexthop: 172.16.21.253)
+64 bytes from 172.16.20.1: icmp_seq=4 ttl=63 time=0.406 ms
+From 172.16.21.254: icmp_seq=5 Redirect Host(New nexthop: 172.16.21.253)
+64 bytes from 172.16.20.1: icmp_seq=5 ttl=63 time=0.349 ms
+^C
+--- 172.16.20.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 95ms
+rtt min/avg/max/mdev = 0.325/0.354/0.406/0.035 ms
+root@gnu22:~# traceroute -n 172.16.20.1
+traceroute to 172.16.20.1 (172.16.20.1), 30 hops max, 60 byte packets
+ 1  172.16.21.254  0.161 ms  0.155 ms  0.167 ms
+ 2  172.16.21.253  0.282 ms  1.261 ms  1.247 ms
+ 3  172.16.20.1  2.412 ms  2.400 ms  2.394 ms
+
+
+
+root@gnu22:~# route add -net 172.16.20.0/24 gw 172.16.21.253
+root@gnu22:~# traceroute -n 172.16.20.1
+traceroute to 172.16.20.1 (172.16.20.1), 30 hops max, 60 byte packets
+ 1  172.16.21.253  0.173 ms  0.160 ms  0.162 ms
+ 2  172.16.20.1  0.339 ms  0.343 ms  1.314 ms
+root@gnu22:~# 
+
+
+root@gnu22:~# sysctl net.ipv4.conf.eth1.accept_redirects=1
+net.ipv4.conf.eth1.accept_redirects = 1
+root@gnu22:~# sysctl net.ipv4.conf.all.accept_redirects=1
+net.ipv4.conf.all.accept_redirects = 1
+
+
+

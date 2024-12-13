@@ -1,0 +1,112 @@
+root@gnu23:~# route add default gw 172.16.20.254
+root@gnu23:~# ping 172.16.20.254
+PING 172.16.20.254 (172.16.20.254) 56(84) bytes of data.
+From 172.16.20.1 icmp_seq=1 Destination Host Unreachable
+From 172.16.20.1 icmp_seq=2 Destination Host Unreachable
+From 172.16.20.1 icmp_seq=3 Destination Host Unreachable
+^C
+--- 172.16.20.254 ping statistics ---
+6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 128ms
+pipe 4
+root@gnu23:~# ping 172.16.20.254
+PING 172.16.20.254 (172.16.20.254) 56(84) bytes of data.
+64 bytes from 172.16.20.254: icmp_seq=1 ttl=64 time=0.320 ms
+64 bytes from 172.16.20.254: icmp_seq=2 ttl=64 time=0.153 ms
+64 bytes from 172.16.20.254: icmp_seq=3 ttl=64 time=0.144 ms
+64 bytes from 172.16.20.254: icmp_seq=4 ttl=64 time=0.147 ms
+64 bytes from 172.16.20.254: icmp_seq=5 ttl=64 time=0.168 ms
+64 bytes from 172.16.20.254: icmp_seq=6 ttl=64 time=0.149 ms
+64 bytes from 172.16.20.254: icmp_seq=7 ttl=64 time=0.142 ms
+^C
+--- 172.16.20.254 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 150ms
+rtt min/avg/max/mdev = 0.142/0.174/0.320/0.061 ms
+root@gnu23:~# ping 172.16.20.254
+PING 172.16.20.254 (172.16.20.254) 56(84) bytes of data.
+64 bytes from 172.16.20.254: icmp_seq=1 ttl=64 time=0.165 ms
+64 bytes from 172.16.20.254: icmp_seq=2 ttl=64 time=0.151 ms
+64 bytes from 172.16.20.254: icmp_seq=3 ttl=64 time=0.176 ms
+64 bytes from 172.16.20.254: icmp_seq=4 ttl=64 time=0.152 ms
+64 bytes from 172.16.20.254: icmp_seq=5 ttl=64 time=0.147 ms
+64 bytes from 172.16.20.254: icmp_seq=6 ttl=64 time=0.152 ms
+64 bytes from 172.16.20.254: icmp_seq=7 ttl=64 time=0.148 ms
+^C
+--- 172.16.20.254 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 133ms
+rtt min/avg/max/mdev = 0.147/0.155/0.176/0.019 ms
+root@gnu23:~# ping 172.16.21.1
+PING 172.16.21.1 (172.16.21.1) 56(84) bytes of data.
+64 bytes from 172.16.21.1: icmp_seq=1 ttl=63 time=0.362 ms
+64 bytes from 172.16.21.1: icmp_seq=2 ttl=63 time=0.249 ms
+64 bytes from 172.16.21.1: icmp_seq=3 ttl=63 time=0.246 ms
+64 bytes from 172.16.21.1: icmp_seq=4 ttl=63 time=0.244 ms
+^C
+--- 172.16.21.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 70ms
+rtt min/avg/max/mdev = 0.244/0.275/0.362/0.051 ms
+root@gnu23:~# ping 172.16.21.1
+PING 172.16.21.1 (172.16.21.1) 56(84) bytes of data.
+64 bytes from 172.16.21.1: icmp_seq=1 ttl=63 time=0.320 ms
+64 bytes from 172.16.21.1: icmp_seq=2 ttl=63 time=0.303 ms
+64 bytes from 172.16.21.1: icmp_seq=3 ttl=63 time=0.263 ms
+64 bytes from 172.16.21.1: icmp_seq=4 ttl=63 time=0.270 ms
+64 bytes from 172.16.21.1: icmp_seq=5 ttl=63 time=0.262 ms
+64 bytes from 172.16.21.1: icmp_seq=6 ttl=63 time=0.248 ms
+64 bytes from 172.16.21.1: icmp_seq=7 ttl=63 time=0.288 ms
+64 bytes from 172.16.21.1: icmp_seq=8 ttl=63 time=0.280 ms
+^C
+--- 172.16.21.1 ping statistics ---
+8 packets transmitted, 8 received, 0% packet loss, time 137ms
+rtt min/avg/max/mdev = 0.248/0.279/0.320/0.025 ms
+root@gnu23:~# ping 172.16.21.254
+PING 172.16.21.254 (172.16.21.254) 56(84) bytes of data.
+64 bytes from 172.16.21.254: icmp_seq=1 ttl=63 time=0.326 ms
+64 bytes from 172.16.21.254: icmp_seq=2 ttl=63 time=0.302 ms
+64 bytes from 172.16.21.254: icmp_seq=3 ttl=63 time=0.281 ms
+64 bytes from 172.16.21.254: icmp_seq=4 ttl=63 time=0.287 ms
+^C
+--- 172.16.21.254 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 52ms
+rtt min/avg/max/mdev = 0.281/0.299/0.326/0.017 ms
+root@gnu23:~# ping 172.16.21.254
+PING 172.16.21.254 (172.16.21.254) 56(84) bytes of data.
+64 bytes from 172.16.21.254: icmp_seq=1 ttl=63 time=0.330 ms
+64 bytes from 172.16.21.254: icmp_seq=2 ttl=63 time=0.317 ms
+64 bytes from 172.16.21.254: icmp_seq=3 ttl=63 time=0.300 ms
+64 bytes from 172.16.21.254: icmp_seq=4 ttl=63 time=0.300 ms
+64 bytes from 172.16.21.254: icmp_seq=5 ttl=63 time=0.302 ms
+64 bytes from 172.16.21.254: icmp_seq=6 ttl=63 time=0.283 ms
+64 bytes from 172.16.21.254: icmp_seq=7 ttl=63 time=0.313 ms
+64 bytes from 172.16.21.254: icmp_seq=8 ttl=63 time=0.283 ms
+64 bytes from 172.16.21.254: icmp_seq=9 ttl=63 time=0.290 ms
+^C
+--- 172.16.21.254 ping statistics ---
+9 packets transmitted, 9 received, 0% packet loss, time 208ms
+rtt min/avg/max/mdev = 0.283/0.302/0.330/0.014 ms
+root@gnu23:~# 
+
+
+root@gnu23:~# ping 172.16.1.10
+PING 172.16.1.10 (172.16.1.10) 56(84) bytes of data.
+64 bytes from 172.16.1.10: icmp_seq=1 ttl=62 time=0.683 ms
+64 bytes from 172.16.1.10: icmp_seq=2 ttl=62 time=0.377 ms
+64 bytes from 172.16.1.10: icmp_seq=3 ttl=62 time=0.372 ms
+64 bytes from 172.16.1.10: icmp_seq=4 ttl=62 time=0.368 ms
+64 bytes from 172.16.1.10: icmp_seq=5 ttl=62 time=0.423 ms
+64 bytes from 172.16.1.10: icmp_seq=6 ttl=62 time=0.517 ms
+^C
+--- 172.16.1.10 ping statistics ---
+6 packets transmitted, 6 received, 0% packet loss, time 127ms
+rtt min/avg/max/mdev = 0.368/0.456/0.683/0.116 ms
+
+
+root@gnu23:~# ping 172.16.1.10
+PING 172.16.1.10 (172.16.1.10) 56(84) bytes of data.
+^C
+--- 172.16.1.10 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 50ms
+
+
+
+
+
