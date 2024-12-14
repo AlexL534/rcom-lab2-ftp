@@ -43,8 +43,8 @@ int parse_url(char* url, URL *parsed_url) {
     regcomp(&regex, "@", 0);
     if (regexec(&regex, url, 0, NULL, 0) != 0) { // Format: ftp://<host>/<path>
         sscanf(url, "ftp://%255[^/]/%1023s", parsed_url->host, parsed_url->path);
-        strcpy(parsed_url->user, "rcom");
-        strcpy(parsed_url->password, "rcom");
+        strcpy(parsed_url->user, "anonymous");
+        strcpy(parsed_url->password, "anonymous");
     } else { // Format: ftp://<user>:<password>@<host>/<path>
         sscanf(url, "ftp://%255[^:]:%255[^@]@%255[^/]/%1023s", parsed_url->user, parsed_url->password, parsed_url->host, parsed_url->path);
     }
