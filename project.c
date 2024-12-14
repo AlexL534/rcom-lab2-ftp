@@ -179,6 +179,8 @@ int retrieve_file(int control_sock, int data_sock, const char *file_path) {
     
     if (code != FILE_OK_OPEN_DATA && code != DATA_CONNECTION_ALREADY_OPEN) {
         printf("Could not find resource %s\n", file_path);
+        close(control_sock);
+        close(data_sock);
         exit(-1);
     }
 
@@ -194,12 +196,18 @@ int retrieve_file(int control_sock, int data_sock, const char *file_path) {
     while ((bytes_received = recv(data_sock, buffer, sizeof(buffer), 0)) > 0) {
         if (fwrite(buffer, 1, bytes_received, file) < 0) {
             printf("Error downloading file\n");
+            fclose(file);
+            close(control_sock);
+            close(data_sock);
             exit(-1);
         }
     }
 
     if (bytes_received < 0) {
         perror("recv()");
+        fclose(file);
+        close(control_sock);
+        close(data_sock);
         exit(-1);
     }
 
@@ -266,6 +274,7 @@ int main(int argc, char *argv[]) {
     // Send USER and PASS commands
     if (send_user_command(control_sock, parsed_url.user) != USER_OK_NEED_PASS) {
         printf("User %s is not known. Aborting\n", parsed_url.user);
+        close(control_sock);
         exit(-1);
     }
 
@@ -273,6 +282,7 @@ int main(int argc, char *argv[]) {
 
     if (send_pass_command(control_sock, parsed_url.password) != USER_LOGGED_IN) {
         printf("Could not log the User %s with password:%s in. Aborting\n", parsed_url.user, parsed_url.password);
+        close(control_sock);
         exit(-1);
     }
 
@@ -292,7 +302,7 @@ int main(int argc, char *argv[]) {
 
     // Retrieve file
     if (retrieve_file(control_sock, data_sock, parsed_url.path) != CLOSING_DATA_CONNECTION) {
-        printf("Error downloading file %s.\n", parsed_url.path);
+        printf("Error downloading file %s or while closing the connection.\n", parsed_url.path);
     }
 
     printf("File %s was downloaded successfully.\n", parsed_url.path);
