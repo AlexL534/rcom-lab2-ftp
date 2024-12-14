@@ -22,6 +22,7 @@
 #define CLOSING_DATA_CONNECTION 226
 #define CLOSING_CONTROL_CONNECTION 221
 #define DATA_CONNECTION_ALREADY_OPEN 125
+#define ERROR_CLOSING_DATA_CONNECTION 426
 
 typedef struct {
     char user[MAX_LENGTH];
@@ -215,6 +216,19 @@ int retrieve_file(int control_sock, int data_sock, const char *file_path) {
     do {
        code = receive_server_response(control_sock, response);
     } while (code == FILE_OK_OPEN_DATA || code == DATA_CONNECTION_ALREADY_OPEN);
+
+    if (code == ERROR_CLOSING_DATA_CONNECTION) {
+
+        printf("Error while closing connection. Handling.\n");
+
+        memset(command, 0, sizeof(command));
+        snprintf(command, sizeof(command), "ABOR\r\n");
+        send_ftp_command(control_sock, command);
+        do {
+        code = receive_server_response(control_sock, response);
+        } while (code == ERROR_CLOSING_DATA_CONNECTION);
+    }
+
     return code;
 }
 
@@ -302,7 +316,10 @@ int main(int argc, char *argv[]) {
 
     // Retrieve file
     if (retrieve_file(control_sock, data_sock, parsed_url.path) != CLOSING_DATA_CONNECTION) {
-        printf("Error downloading file %s or while closing the connection.\n", parsed_url.path);
+        printf("Error downloading file %s.\n", parsed_url.path);
+        close(control_sock);
+        close(data_sock);
+        exit(-1);
     }
 
     printf("File %s was downloaded successfully.\n", parsed_url.path);
