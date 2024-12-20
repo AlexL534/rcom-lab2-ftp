@@ -1,0 +1,405 @@
+E1 tux42 no switch 2
+E1 tux43 no switch 3
+E1 tux44 no switch 4
+E2 tux44 no switch 7
+E1 do router no P4.12
+E2 do router no switch 6
+
+no canto superior direito tem 2 cabos juntos ligados que são relacionados à consola
+um delas liga-se ao console (ou no router MT, dependendo do que for para configurar no gtk) e o outro no S0 tux43 (para o gtk funcionar no tux 3)
+
+EXP 1
+
+no tux 3
+ifconfig eth1 up
+ifconfig eth1 172.16.40.1/24
+
+no tux 4
+ifconfig eth1 up
+ifconfig eth1 172.16.40.254/24
+
+LOGS
+escreve os endereços IP e MAC das interfaces - faz ifconfig (o MAC está no campo ether)~
+END LOGS
+
+para verificar a conectividade, faz-se pings:
+
+1. no tux 3 pingar o 4
+     ping 172.16.40.254
+
+2. no tux 4 pingar o 3
+     ping 172.16.40.1
+
+LOGS
+inspecionar as forwarding tables
+route -n
+
+e as ARP tables
+arp -a
+
+depois apagar a entrada da tabela ARP do tux 3
+arp -d 172.16.40.254/24
+
+abrir o wireshark no eth1 do tux 3
+ping 172.16.40.254
+guardar o log
+END LOGS
+
+
+EXP 2
+
+no tux 2
+ifconfig eth1 up
+ifconfig eth1 172.16.41.1/24
+
+LOGS
+escreve os endereços IP e MAC (ifconfig)
+END LOGS
+
+no gtk
+/system reset-configuration no gtk
+/interface bridge add name=bridge40
+/interface bridge add name=bridge41
+
+/interface bridge port remove [find interface=ether2] 
+/interface bridge port remove [find interface=ether3] 
+/interface bridge port remove [find interface=ether4] 
+
+/interface bridge port add bridge=bridge41 interface=ether2
+/interface bridge port add bridge=bridge40 interface=ether3
+/interface bridge port add bridge=bridge40 interface=ether4
+
+HALF LOGS (faz os pings, wireshark é que é ao teu critério)
+wireshark - captura o eth1 do tux 3
+no tux 3 pinga o 4 e o 2
+ping 172.16.40.254 #funfa
+ping 172.16.41.1   #n funfa
+guarda os logs do wireshark
+END HALF LOGS
+
+LOGS
+depois faz capturas para o eth 1 dos 3 tuxs
+e no tux 3 faz
+ping -b 172.16.40.255
+guarda os logs do wireshark
+
+volta a capturar nos 3 
+e no tux 2 faz 
+ping -b 172.16.41.255
+guarda os logs do wireshark
+END LOGS
+
+EXP 3
+no gtk
+/interface bridge port remove [find interface=ether7]
+/interface bridge port add bridge=bridge41 interface=ether7
+
+no tux 4
+ifconfig eth2 up
+ifconfig eth2 172.16.41.253/24
+
+sysctl net.ipv4.ip_forward=1
+sysctl net.ipv4.icmp_echo_ignore_broadcasts=0
+
+LOGS
+observa os endereços IP e MAC no eth1 e eth2 do tux4 (ifconfig)
+END LOGS
+
+no tux 2
+route add -net  172.16.40.0/24 gw 172.16.41.253
+
+no tux 3
+route add -net  172.16.41.0/24 gw 172.16.40.254 
+
+LOGS
+route -n
+END LOGS
+
+HALF LOGS (tens de fazer os pings, agora capturar no wireshark é ao teu critério)
+capturar eth1 do tux 3
+    ping 172.16.40.254
+    ping 172.16.41.253
+    ping 172.16.41.1    #é suposto os 3 funcionarem
+guardar logs
+END HALF LOGS
+
+LOGS 
+captura os 2 eth do tux 4
+    arp -d 172.16.41.253 #Tux2
+    arp -d 172.16.40.254 #Tux3
+    arp -d 172.16.40.1 #Tux4
+    arp -d 172.16.41.1 #Tux4
+ping 172.16.41.1
+guarda logs do wireshark
+END LOGS
+
+
+EXP 4
+no gtk
+/interface bridge port remove [find interface=ether6]
+/interface bridge port add bridge=bridge41 interface=ether6
+
+troca o cabo que está na consola para o router mt
+no gtk (do router) faz
+/system reset-configuration
+
+/ip address add address=172.16.1.49/24 interface=ether1
+/ip address add address=172.16.41.254/24 interface=ether2
+
+/ip route add dst-address=172.16.40.0/24 gateway=172.16.41.253 
+
+a seguinte não é suposto usar, mas caso não esteja a funcionar experimenta meter
+/ip route add dst-address=0.0.0.0/0 gateway=172.16.1.254 
+
+no tux 2
+route add -net 172.16.40.0/24 gw 172.16.41.254 
+route add -net 172.16.1.0/24 gw 172.16.41.254 #faz com que o tux2 use o router para chegar nestes ips
+
+no tux 3
+route add -net 172.16.41.0/24 gw 172.16.40.254
+route add -net 172.16.1.0/24 gw 172.16.40.254
+
+no tux 4
+route add -net 172.16.1.0/24 gw 172.16.40.254
+
+HALF LOGS (faz pings, wireshark ao critério)
+captura eth1 do tux 3 com wireshark
+ping 172.16.41.1 #tux 2 TEM DE FUNCIONAR
+ping 172.16.40.254 #tux 4 TEM DE FUNCIONAR
+ping 172.16.41.254 #RC ether 2 TEM DE FUNCIONAR
+ping 172.16.1.49 #RC ether 1 N SEI SE É SUPOSTO FUNFAR, ENT SE NÃO DER SÓ CAGA
+guardar logs do wireshark
+END HALF LOGS
+
+no tux 2
+sysctl net.ipv4.conf.eth1.accept_redirects=0
+sysctl net.ipv4.conf.all.accept_redirects=0
+
+route del -net 172.16.40.0 gw 172.16.41.253 netmask 255.255.255.0
+
+HALF LOGS
+capturar eth 1 do tux 2
+no tux 2
+ping 172.16.40.1 #tux 2 vai pingar o 3, a ligação é estabelecida usando o Rc em vez do tux 4
+é suposto tentar perceber a path seguida pelos ICMP ECHO e ECHO-REPLY (diz para ver os endereços MAC)
+END HALF LOGS
+
+ainda no tux 2
+faz traceroute -n 172.16.40.1 (rota para tux 3)
+
+route add -net 172.16.40.0/24 gw 172.16.41.253 
+
+traceroute -n 172.16.50.1
+
+sysctl net.ipv4.conf.all.accept_redirects=1
+
+(relacionado ao último comando): Activate the acceptance of ICMP redirect at tuxY2 when there is no route to 172.16.Y0.0/24 via tuxY4 and try to understand what happens
+então acho que convém ter um log relacionado a isso, para podermos perceber o que acontece
+
+indo para o próximo passo do guião (já não relacionado ao último)
+
+no tux 3
+
+ping 172.16.1.10 #ftp server (diz para tentar perceber o que acontece)
+
+/ip firewall nat disable 0
+
+no tux 3
+
+ping 172.16.1.10 (outra vez) #verifica que não há ligação (é para perceber o pq então convém ter log)
+
+este passo não diz para fazer no guião, mas faz todo o sentido fazer (e o fábio goat fez)
+/ip firewall nat enable 0
+
+EXP 5
+para configurar dns é no /etc/resolv.conf
+Configure DNS at tuxY3, tuxY4, tuxY2
+(use DNS server services.netlab.fe.up.pt (10.227.20.3))
+2. Verify if names can be used in these hosts (e.g., ping hostname, use browser)
+3. Execute ping (new-hostname-in-the-Internet); observe DNS related packets in
+Wireshark
+
+o fábio tinha usado este, n sei até que ponto é suposto fazermos o mesmo
+nameserver 172.16.1.1
+ping google.com
+
+
+EXP 6
+compila a aplicaçãozinha (LET'S GO)
+no tux 3, mete o wireshark a capturar o eth 1 e corre a aplicação
+ficheiros pequenos com que se pode testar (o grande vou meter mais à frente para o passo em que tem de ser mesmo ele):
+
+ftp://rcom:rcom@ftp.netlab.fe.up.pt/README
+ftp://rcom:rcom@ftp.netlab.fe.up.pt/pipe.txt
+ftp://rcom:rcom@ftp.netlab.fe.up.pt/files/crab.mp4
+
+verifica se o ficheiro chegou corretamente, para a captura e guarda os logs
+
+textão incoming
+
+isto é o que diz no guião
+
+Using Wireshark, observe packets exchanged including:
+– TCP control and data connections, and its phases (establishment, data,
+termination)
+– Data transferred through the FTP control connection
+– TCP ARQ mechanism
+– TCP congestion control mechanism in action
+– Note: use also the Wireshark Statistics tools (menu) to study the TCP
+phases, ARQ and congestion control mechanism
+
+
+n faço ideia de como se faz isto, então vou meter como o chatgpt diz que se faz (se quiseres dar skip para o próximo passo podes pesquisar ENDCHATGPT)
+
+CHATGPT
+In this experiment, you will need to **capture and analyze packets** in Wireshark to understand various network behaviors. Here’s how you should approach the process and what you need to focus on:
+
+### **Wireshark Setup**
+1. **Start Wireshark Capture**:
+   - Begin by capturing the traffic on the appropriate network interface. For example, if you're working on a system like `tuxY3` that communicates with the FTP server, select the interface connected to the network where the traffic will pass through (e.g., `eth1` or another network interface).
+   
+   - Start the Wireshark capture before initiating any activities (such as pinging or FTP transfers) to ensure you capture all relevant packets.
+
+2. **Filters**:
+   - Use filters to help narrow down the traffic that is relevant to the experiment. The following filters can be useful:
+     - **TCP traffic**: `tcp`
+     - **FTP control traffic (port 21)**: `tcp.port == 21`
+     - **Data transfer traffic (usually port 20 for active mode FTP)**: `tcp.port == 20`
+     - **Filter by IP address** (e.g., to capture only packets between `tuxY3` and the FTP server): `ip.addr == 172.16.1.10`
+
+---
+
+### **Specific Analysis Tasks**
+You'll be examining several aspects of TCP communication. Here's a breakdown of what to look for and how to analyze it:
+
+1. **TCP Control and Data Connections, and Phases**:
+   - **Establishment**: Look for the TCP **three-way handshake** (SYN, SYN-ACK, ACK). You will see packets with flags like `SYN` and `ACK` being exchanged between the client (tuxY3) and the FTP server.
+   - **Data Transfer**: Once the handshake is complete, data packets will be exchanged. These packets will have the `PSH` flag set (push flag) which means data is being transmitted.
+   - **Termination**: Look for the **four-way handshake** (FIN, ACK, FIN, ACK) when the connection is being closed. This will be visible as packets with the `FIN` flag.
+
+   **Wireshark Tip**: Use the **follow TCP stream** option to see the entire conversation between the client and server in order, which will show you the control and data exchange.
+
+2. **Data Transferred Through the FTP Control Connection**:
+   - The FTP control connection is established on port 21. Look at the packets exchanged on this port to see the commands sent by the client (such as `USER`, `PASS`, `LIST`, `RETR`, etc.) and responses from the server.
+   - You’ll see FTP commands (like `USER`, `PASS`, etc.) and their corresponding responses (like `220`, `230`), indicating successful authentication or command execution.
+
+3. **TCP ARQ (Automatic Repeat reQuest) Mechanism**:
+   - Look for **retransmitted packets** in Wireshark. These packets are marked with a specific indicator, and they show when a packet is lost or corrupted and needs to be retransmitted.
+   - You can identify these by looking at the packet details in Wireshark, where you’ll see the **sequence numbers** and **acknowledgements**.
+
+4. **TCP Congestion Control Mechanism**:
+   - **Window size adjustments**: Wireshark can show you the TCP **window size** in the packet details. You can observe how it changes during congestion. A smaller window size can indicate congestion control mechanisms like **slow start**, **congestion avoidance**, or **fast retransmit**.
+   - **TCP slow-start**: This will be visible if the congestion window grows slowly at the beginning of the transmission.
+   - **Wireshark Statistics**: Use **TCP Stream Graphs** and **Flow Graphs** to visualize TCP behavior. These graphs can show you how the window size changes over time, and you may be able to observe slow start and congestion avoidance in action.
+
+   - **Graphing**:
+     - In Wireshark, go to `Statistics > TCP Stream Graphs > Time-Sequence Graph (Stevens)` to visualize the sequence and acknowledgment numbers over time. This will help you see how the TCP connection reacts during congestion.
+
+---
+
+### **Wireshark Statistics Tools**
+Wireshark provides several built-in **statistics tools** that will help you visualize the TCP traffic:
+
+1. **TCP Stream Graphs**:
+   - Go to `Statistics > TCP Stream Graphs` to see graphs like:
+     - **Time-Sequence Graph (Stevens)**: Shows the sequence numbers and the connection's throughput.
+     - **Round Trip Time Graph**: Displays the round-trip times of packets.
+     - **Throughput Graph**: Shows the throughput of the connection over time.
+
+2. **Flow Graph**:
+   - Go to `Statistics > Flow Graph` to see a **graphical representation** of the communication between the client and server. This is useful for understanding the sequence of events, including packet exchanges and timing.
+
+3. **IO Graphs**:
+   - Go to `Statistics > IO Graph` to plot the number of packets over time. This can show you bursts of traffic, pauses, or retransmissions.
+
+---
+
+### **Summary of What to Look For in Wireshark**
+- **TCP Handshake** (SYN, SYN-ACK, ACK)
+- **Data Transfer** (PSH flag)
+- **TCP Termination** (FIN, ACK)
+- **FTP Commands and Responses** over port 21
+- **Retransmissions** and sequence numbers for ARQ
+- **Window Size** and changes in response to congestion
+- Use **TCP Stream Graphs**, **Flow Graphs**, and **IO Graphs** for visualizing TCP congestion control and performance.
+
+### **Recording and Saving Logs**
+- After capturing and analyzing the data, save the Wireshark logs as `.pcap` files for later review or reporting.
+
+By following these steps and focusing on the key TCP behaviors, you will gain insights into how the FTP session is established, data is transmitted, and how TCP manages reliability and congestion. Let me know if you need additional guidance on specific points!
+
+ENDCHATGPT
+
+agora é para ter o wireshark a dar escuta no tux 3, correr a aplicação mas enquanto isso meter a correr no tux 2
+para isso usar este ficheiro
+
+ftp://rcom:rcom@ftp.netlab.fe.up.pt/ubuntu.iso
+
+Use the Wireshark statistics tools to understand how the throughput of a
+TCP connection varies along the time
+
+suponho que seja parecido com o que o passo anterior, mas vou perguntar ao chatgpt o que ele acha que se deve fazer para as estatísticas e meter aqui (o mais relevante deve ser a parte final do que ele disse)
+
+CHATGPT
+To repeat the download in **tuxY3** and start a new download in **tuxY2** in the middle of the transfer, while using Wireshark's statistics tools to understand the variation in throughput, follow these steps:
+
+### **Step-by-Step Procedure**
+
+#### 1. **Start Wireshark Capture**
+   - Begin by launching **Wireshark** on the interface that will capture the traffic (such as `eth1` on **tuxY3**).
+   - Apply a filter to capture FTP traffic or all TCP traffic, e.g., `tcp` or `tcp.port == 21` for FTP control traffic and `tcp.port == 20` for data transfer.
+   - **Start capturing** to log all the relevant traffic during the download process.
+
+#### 2. **Start Download in tuxY3**
+   - On **tuxY3**, initiate the download (e.g., using `wget` or `curl`) from the FTP server (e.g., `ftp.netlab.fe.up.pt`).
+   - Monitor the download to ensure the connection is established and data starts transferring.
+
+#### 3. **Midway Through the Download, Start a New Download in tuxY2**
+   - While the download in **tuxY3** is still running (you can check progress with `wget` or `curl`), initiate a new download in **tuxY2**.
+     - On **tuxY2**, also use `wget` or `curl` to start a download from the same FTP server or another available resource.
+     - Make sure that **tuxY2** and **tuxY3** both start downloading at the same time.
+   
+#### 4. **Wireshark Analysis of Throughput**
+   - **Monitor TCP Traffic**: In Wireshark, you should see two separate TCP connections — one for each download. Keep an eye on both traffic flows.
+   
+   - **TCP Stream Graphs**: After the downloads have been running for some time, use the following Wireshark tools to analyze the throughput and see how it is affected by running two concurrent transfers:
+
+     - **Go to Statistics > TCP Stream Graphs > Throughput Graph**:
+       - This graph shows the throughput of the TCP connection over time. It will depict how the rate of data transfer changes throughout the download process.
+       - **Throughput**: You can observe how the throughput fluctuates when the second download (from **tuxY2**) begins midway through the first download (on **tuxY3**).
+       - Look for changes or drops in throughput when both transfers are active, as it may indicate the effects of resource contention, congestion, or network bottlenecks.
+
+     - **Statistics > IO Graphs**:
+       - This allows you to visualize traffic over time, showing how many packets are sent/received at different moments.
+       - It’s helpful for understanding the burstiness of traffic and the impact of multiple transfers on the available bandwidth.
+
+#### 5. **Additional Wireshark Metrics to Observe**
+   - **Round-Trip Time (RTT)**: Look at the **Round Trip Time (RTT)** graph to see how delays change during the concurrent downloads. This is important for understanding if the network is becoming congested as the second download starts.
+   - **Retransmissions**: Check for any **retransmissions** or **duplicate ACKs** in the TCP traffic. These could indicate network congestion or issues with throughput due to multiple simultaneous transfers.
+   - **Window Size**: The **TCP window size** can also provide insight into the congestion control mechanism at play. As the second download starts, you might see the window size change or fluctuate.
+
+#### 6. **Stop Wireshark Capture**
+   - Once you have captured enough data, stop the Wireshark capture. Make sure you save the capture file for later analysis if needed.
+
+#### 7. **Interpretation**
+   - Analyze the **Throughput Graph**: You should see how the throughput for **tuxY3** changes when **tuxY2** starts its download.
+     - If both transfers are competing for the same resources, you may notice a **decrease in throughput** for each connection when the second download begins.
+     - If the network is saturated or bandwidth is limited, the **throughput will drop** as both transfers fight for bandwidth.
+   
+   - Look for patterns where one connection might **throttle down** its speed or experience packet loss if network congestion is happening. You may also observe **TCP slow start** or **congestion avoidance** mechanisms being triggered.
+
+---
+
+### **Wireshark Statistics Tools to Use**
+- **TCP Stream Graphs**: These help visualize throughput and other TCP behaviors.
+- **IO Graphs**: Useful for observing packet flow and burstiness of the traffic.
+- **Round Trip Time (RTT) Graph**: To see how latency changes with two concurrent transfers.
+- **Retransmissions and Duplicate ACKs**: Can be analyzed directly in the packet capture to see the impact of congestion.
+
+### **Expected Outcome**:
+- You should observe a decrease in the throughput of the downloads as both **tuxY3** and **tuxY2** are downloading simultaneously.
+- **TCP congestion control** mechanisms (like slow start or congestion avoidance) may be triggered, leading to dynamic changes in **window size** or changes in **RTT**.
+- Depending on the network conditions, you may also see increased retransmissions or packet loss.
+
+This experiment gives a hands-on view of how TCP handles multiple connections and manages throughput under simultaneous load, as well as how network performance may degrade with multiple active transfers.
+ENDCHATGPT

@@ -150,8 +150,8 @@ Here is the properly formatted content for **Exp 2: Implement two bridges in a s
 
 4. **Capture `eth1` of Tux 43 with Wireshark** and ping Tux 44 and Tux 42:
    ```bash
-   ping 172.16.50.254 
-   ping 172.16.51.1
+   ping 172.16.40.254 
+   ping 172.16.41.1
    ```
 
    - The ping to Tux 44 should work, while Tux 42 shouldn't respond.
