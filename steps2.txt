@@ -143,7 +143,7 @@ troca o cabo que está na consola para o router mt
 no gtk (do router) faz
 /system reset-configuration
 
-/ip address add address=172.16.1.49/24 interface=ether1
+/ip address add address=172.16.1.41/24 interface=ether1 (este é aquele que o guião diz 49, se der problemas podemos testar com 49)
 /ip address add address=172.16.41.254/24 interface=ether2
 
 /ip route add dst-address=172.16.40.0/24 gateway=172.16.41.253 
