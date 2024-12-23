@@ -1,0 +1,131 @@
+root@gnu43:~# ifconfig eth1 up
+root@gnu43:~# ifconfig eth1 172.16.40.1/24
+root@gnu43:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.227.20.187  netmask 255.255.255.0  broadcast 10.227.20.255
+        inet6 fe80::221:5aff:fe61:2f13  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:61:2f:13  txqueuelen 1000  (Ethernet)
+        RX packets 5068  bytes 329584 (321.8 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 61  bytes 8356 (8.1 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.40.1  netmask 255.255.255.0  broadcast 172.16.40.255
+        inet6 fe80::201:2ff:fe9f:812e  prefixlen 64  scopeid 0x20<link>
+        ether 00:01:02:9f:81:2e  txqueuelen 1000  (Ethernet)
+        RX packets 243  bytes 17821 (17.4 KiB)
+        RX errors 0  dropped 210  overruns 0  frame 0
+        TX packets 28  bytes 3914 (3.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 20  base 0x5000  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 4  bytes 240 (240.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4  bytes 240 (240.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@gnu43:~# ping 172.16.40.254
+PING 172.16.40.254 (172.16.40.254) 56(84) bytes of data.
+64 bytes from 172.16.40.254: icmp_seq=1 ttl=64 time=0.228 ms
+64 bytes from 172.16.40.254: icmp_seq=2 ttl=64 time=0.096 ms
+64 bytes from 172.16.40.254: icmp_seq=3 ttl=64 time=0.095 ms
+^C
+--- 172.16.40.254 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 48ms
+rtt min/avg/max/mdev = 0.095/0.139/0.228/0.063 ms
+root@gnu43:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.40.0     0.0.0.0         255.255.255.0   U     0      0        0 eth1
+root@gnu43:~# arp -a
+dns.netlab.fe.up.pt (10.227.20.2) at bc:24:11:f5:a2:54 [ether] on eth0
+? (172.16.40.254) at 00:c0:df:02:55:95 [ether] on eth1
+? (10.227.20.254) at e4:8d:8c:20:25:c8 [ether] on eth0
+ns1.netlab.fe.up.pt (10.227.20.3) at bc:24:11:e7:5e:5b [ether] on eth0
+root@gnu43:~# arp -d 172.16.40.254/24
+172.16.40.254/24: Unknown host
+root@gnu43:~# arp -d 172.16.40.254
+root@gnu43:~# arp -a
+dns.netlab.fe.up.pt (10.227.20.2) at bc:24:11:f5:a2:54 [ether] on eth0
+? (10.227.20.254) at e4:8d:8c:20:25:c8 [ether] on eth0
+ns1.netlab.fe.up.pt (10.227.20.3) at bc:24:11:e7:5e:5b [ether] on eth0
+root@gnu43:~# 
+
+
+
+
+
+--------------------
+
+EXP 3
+
+
+root@gnu43:~# route add -net 172.16.41.0/24 gw 172.16.40.254
+root@gnu43:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.40.0     0.0.0.0         255.255.255.0   U     0      0        0 eth1
+172.16.41.0     172.16.40.254   255.255.255.0   UG    0      0        0 eth1
+root@gnu43:~# 
+
+
+
+
+------------------
+
+
+EXP 4
+
+
+root@gnu43:~# ping 172.16.1.10
+PING 172.16.1.10 (172.16.1.10) 56(84) bytes of data.
+From 172.16.40.254: icmp_seq=1 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=2 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=3 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=4 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=5 Redirect Host(New nexthop: 172.16.1.10)
+^C
+--- 172.16.1.10 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 87ms
+
+root@gnu43:~# ping 172.16.1.10
+PING 172.16.1.10 (172.16.1.10) 56(84) bytes of data.
+From 172.16.40.254: icmp_seq=1 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=2 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=3 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=4 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=5 Redirect Host(New nexthop: 172.16.1.10)
+From 172.16.40.254: icmp_seq=6 Redirect Host(New nexthop: 172.16.1.10)
+^C
+--- 172.16.1.10 ping statistics ---
+6 packets transmitted, 0 received, 100% packet loss, time 112ms
+
+root@gnu43:~# 
+
+
+EXP 5
+
+
+root@gnu43:~# ping 10.227.20.3
+PING 10.227.20.3 (10.227.20.3) 56(84) bytes of data.
+64 bytes from 10.227.20.3: icmp_seq=1 ttl=64 time=0.387 ms
+64 bytes from 10.227.20.3: icmp_seq=2 ttl=64 time=0.445 ms
+64 bytes from 10.227.20.3: icmp_seq=3 ttl=64 time=0.428 ms
+64 bytes from 10.227.20.3: icmp_seq=4 ttl=64 time=0.472 ms
+64 bytes from 10.227.20.3: icmp_seq=5 ttl=64 time=0.407 ms
+64 bytes from 10.227.20.3: icmp_seq=6 ttl=64 time=0.323 ms
+64 bytes from 10.227.20.3: icmp_seq=7 ttl=64 time=0.323 ms
+64 bytes from 10.227.20.3: icmp_seq=8 ttl=64 time=0.325 ms
+
+------------------
+

@@ -1,0 +1,10 @@
+root@gnu42:~# traceroute -n 172.16.40.1
+traceroute to 172.16.40.1 (172.16.40.1), 30 hops max, 60 byte packets
+ 1  172.16.41.254  0.326 ms  0.313 ms  0.328 ms
+ 2  172.16.41.253  0.629 ms  0.623 ms  0.638 ms
+ 3  172.16.40.1  0.807 ms  0.833 ms  0.832 ms
+root@gnu42:~# route add -net 172.16.40.0/24 gw 172.16.41.253
+root@gnu42:~# traceroute -n 172.16.40.1
+traceroute to 172.16.40.1 (172.16.40.1), 30 hops max, 60 byte packets
+ 1  172.16.41.253  0.181 ms  0.167 ms  0.152 ms
+ 2  172.16.40.1  0.369 ms  1.315 ms  2.287 ms

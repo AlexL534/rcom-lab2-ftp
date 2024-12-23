@@ -1,0 +1,88 @@
+root@gnu42:~# ifconfig eth1 up
+root@gnu42:~# ifconfig eth1 172.16.41.1/24
+root@gnu42:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.227.20.72  netmask 255.255.255.0  broadcast 10.227.20.255
+        inet6 fe80::222:64ff:fe19:2ba  prefixlen 64  scopeid 0x20<link>
+        ether 00:22:64:19:02:ba  txqueuelen 1000  (Ethernet)
+        RX packets 7648  bytes 496528 (484.8 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 51  bytes 5528 (5.3 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.41.1  netmask 255.255.255.0  broadcast 172.16.41.255
+        inet6 fe80::2e0:7dff:feb5:8c8f  prefixlen 64  scopeid 0x20<link>
+        ether 00:e0:7d:b5:8c:8f  txqueuelen 1000  (Ethernet)
+        RX packets 1  bytes 159 (159.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 24  bytes 3634 (3.5 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 6  bytes 430 (430.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 6  bytes 430 (430.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@gnu42:~# 
+
+
+
+
+------------
+
+
+EXP 3
+
+
+root@gnu42:~# route add -net 172.16.40.0/24 gw 172.16.41.253
+root@gnu42:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.40.0     172.16.41.253   255.255.255.0   UG    0      0        0 eth1
+172.16.41.0     0.0.0.0         255.255.255.0   U     0      0        0 eth1
+root@gnu42:~# 
+
+
+
+---------------------------
+
+EXP 4
+
+root@gnu42:~# traceroute -n 172.16.40.1
+traceroute to 172.16.40.1 (172.16.40.1), 30 hops max, 60 byte packets
+ 1  172.16.41.254  0.184 ms  0.173 ms  0.198 ms
+ 2  172.16.41.253  0.361 ms  0.348 ms  1.312 ms
+ 3  172.16.40.1  2.285 ms  3.255 ms  4.268 ms
+root@gnu42:~# route add -net 172.16.40.0/24 gw 172.16.41.253
+root@gnu42:~# traceroute -n 172.16.40.1
+traceroute to 172.16.40.1 (172.16.40.1), 30 hops max, 60 byte packets
+ 1  172.16.41.253  0.175 ms  0.146 ms  1.127 ms
+ 2  172.16.40.1  1.109 ms  2.203 ms  3.165 ms
+root@gnu42:~# 
+
+
+
+----------------------------
+
+
+
+EXP 5
+
+
+root@gnu42:~# ping 10.227.20.3
+PING 10.227.20.3 (10.227.20.3) 56(84) bytes of data.
+64 bytes from 10.227.20.3: icmp_seq=1 ttl=64 time=0.424 ms
+64 bytes from 10.227.20.3: icmp_seq=2 ttl=64 time=0.441 ms
+64 bytes from 10.227.20.3: icmp_seq=3 ttl=64 time=0.359 ms
+64 bytes from 10.227.20.3: icmp_seq=4 ttl=64 time=0.291 ms
+64 bytes from 10.227.20.3: icmp_seq=5 ttl=64 time=0.420 ms
+64 bytes from 10.227.20.3: icmp_seq=6 ttl=64 time=0.440 ms
+
