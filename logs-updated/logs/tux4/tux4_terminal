@@ -1,0 +1,133 @@
+root@gnu44:~# ifconfig eth1 up
+root@gnu44:~# ifconfig eth1 172.16.40.254/24
+root@gnu44:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.227.20.74  netmask 255.255.255.0  broadcast 10.227.20.255
+        inet6 fe80::221:5aff:fec3:7876  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:c3:78:76  txqueuelen 1000  (Ethernet)
+        RX packets 12251  bytes 810256 (791.2 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 61  bytes 6208 (6.0 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.40.254  netmask 255.255.255.0  broadcast 172.16.40.255
+        inet6 fe80::2c0:dfff:fe02:5595  prefixlen 64  scopeid 0x20<link>
+        ether 00:c0:df:02:55:95  txqueuelen 1000  (Ethernet)
+        RX packets 1  bytes 157 (157.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 26  bytes 3786 (3.6 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 8  bytes 620 (620.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 8  bytes 620 (620.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@gnu44:~# ping 172.16.40.1
+PING 172.16.40.1 (172.16.40.1) 56(84) bytes of data.
+64 bytes from 172.16.40.1: icmp_seq=1 ttl=64 time=0.149 ms
+64 bytes from 172.16.40.1: icmp_seq=2 ttl=64 time=0.108 ms
+^C
+--- 172.16.40.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 24ms
+rtt min/avg/max/mdev = 0.108/0.128/0.149/0.023 ms
+root@gnu44:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.40.0     0.0.0.0         255.255.255.0   U     0      0        0 eth1
+root@gnu44:~# arp -a
+? (172.16.40.1) at 00:01:02:9f:81:2e [ether] on eth1
+
+------------------------
+
+
+
+root@gnu44:~# ifconfig eth2 up
+root@gnu44:~# ifconfig eth2 172.16.41.253/24
+root@gnu44:~# sysctl net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+root@gnu44:~# sysctl net.ipv4.icmp_echo_ignore_broadcasts=0
+net.ipv4.icmp_echo_ignore_broadcasts = 0
+root@gnu44:~# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.227.20.74  netmask 255.255.255.0  broadcast 10.227.20.255
+        inet6 fe80::221:5aff:fec3:7876  prefixlen 64  scopeid 0x20<link>
+        ether 00:21:5a:c3:78:76  txqueuelen 1000  (Ethernet)
+        RX packets 29096  bytes 1917796 (1.8 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 103  bytes 11436 (11.1 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 17  
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.40.254  netmask 255.255.255.0  broadcast 172.16.40.255
+        inet6 fe80::2c0:dfff:fe02:5595  prefixlen 64  scopeid 0x20<link>
+        ether 00:c0:df:02:55:95  txqueuelen 1000  (Ethernet)
+        RX packets 364  bytes 30780 (30.0 KiB)
+        RX errors 0  dropped 26  overruns 0  frame 0
+        TX packets 82  bytes 10296 (10.0 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.41.253  netmask 255.255.255.0  broadcast 172.16.41.255
+        inet6 fe80::201:2ff:fea0:ad91  prefixlen 64  scopeid 0x20<link>
+        ether 00:01:02:a0:ad:91  txqueuelen 1000  (Ethernet)
+        RX packets 74  bytes 5024 (4.9 KiB)
+        RX errors 0  dropped 70  overruns 0  frame 0
+        TX packets 42  bytes 6416 (6.2 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 21  base 0x5100  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 48  bytes 2620 (2.5 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 48  bytes 2620 (2.5 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@gnu44:~# 
+
+
+
+
+-------------------
+
+
+
+EXP 3
+
+
+root@gnu44:~# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.227.20.254   0.0.0.0         UG    0      0        0 eth0
+10.227.20.0     0.0.0.0         255.255.255.0   U     0      0        0 eth0
+172.16.40.0     0.0.0.0         255.255.255.0   U     0      0        0 eth1
+172.16.41.0     0.0.0.0         255.255.255.0   U     0      0        0 eth2
+root@gnu44:~# 
+
+
+
+-----------------------
+
+EXP 5
+
+root@gnu44:~# ping 10.227.20.3
+PING 10.227.20.3 (10.227.20.3) 56(84) bytes of data.
+64 bytes from 10.227.20.3: icmp_seq=1 ttl=64 time=0.266 ms
+64 bytes from 10.227.20.3: icmp_seq=2 ttl=64 time=0.463 ms
+64 bytes from 10.227.20.3: icmp_seq=4 ttl=64 time=0.467 ms
+64 bytes from 10.227.20.3: icmp_seq=5 ttl=64 time=0.383 ms
+^C
+--- 10.227.20.3 ping statistics ---
+
